@@ -13,7 +13,7 @@
 #include <csignal>
 #include <cstring>
 
-extern char** environ;  // NOLINT(readability-redundant-declaration): POSIX global, not declared by unistd.h in C++
+extern char** environ;  // NOLINT(readability-redundant-declaration,cppcoreguidelines-avoid-non-const-global-variables)
 
 namespace pw {
 namespace {
@@ -100,7 +100,7 @@ struct PreparedLimit {
 {
     std::vector<char*> pointers;
     pointers.reserve(strings.size() + 1);
-    for (std::string& item : strings) {
+    for (std::string& item : strings) {  // cppcheck-suppress constVariableReference ; data() must be mutable
         pointers.push_back(item.data());
     }
     pointers.push_back(nullptr);

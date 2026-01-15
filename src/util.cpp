@@ -131,7 +131,7 @@ std::optional<std::uint64_t> parse_uint(std::string_view text) noexcept
 
 std::optional<double> parse_double(std::string_view text) noexcept
 {
-    if (text.empty() || !(is_digit(text.front()) || text.front() == '.')) {
+    if (text.empty() || (!is_digit(text.front()) && text.front() != '.')) {
         return std::nullopt;
     }
     double value = 0.0;

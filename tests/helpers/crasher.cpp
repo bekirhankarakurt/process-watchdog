@@ -60,7 +60,7 @@ void send_beat()
     std::fflush(stdout);
     std::signal(number, SIG_DFL);
     std::raise(number);
-    std::_Exit(91);
+    std::_Exit(91);  // cppcheck-suppress unreachableCode ; raise() returns if the signal is blocked
 }
 
 void run_action(std::string_view action)
