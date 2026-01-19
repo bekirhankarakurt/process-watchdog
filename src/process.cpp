@@ -45,7 +45,8 @@ struct ChildReport {
 [[noreturn]] void child_fail(int report_fd, ChildStage stage) noexcept
 {
     const ChildReport report{stage, errno};
-    static_cast<void>(::write(report_fd, &report, sizeof(report)));
+    const ssize_t written = ::write(report_fd, &report, sizeof(report));
+    static_cast<void>(written);  // nothing more can be done if the parent is gone
     ::_exit(127);
 }
 
