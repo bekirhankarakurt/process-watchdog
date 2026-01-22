@@ -1,0 +1,70 @@
+name: Coverage & Docs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  coverage:
+    name: Coverage + API docs
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen
+          pipx install gcovr
+      - name: Build with coverage
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DPW_ENABLE_COVERAGE=ON
+          cmake --build build -j "$(nproc)"
+      - name: Test
+        run: ctest --test-dir build --output-on-failure -j "$(nproc)"
+      - name: Coverage report
+        run: |
+          mkdir -p site/coverage
+          gcovr -r . --filter 'src/' --filter 'include/' build \
+            --html-details site/coverage/index.html \
+            --json-summary coverage-summary.json --print-summary
+          python3 - <<'PY'
+          import json
+          pct = json.load(open("coverage-summary.json"))["line_percent"]
+          color = "brightgreen" if pct >= 90 else "green" if pct >= 80 else "yellow" if pct >= 70 else "red"
+          json.dump({"schemaVersion": 1, "label": "coverage", "message": f"{pct:.1f}%", "color": color},
+                    open("site/coverage.json", "w"))
+          PY
+      - name: API documentation
+        run: |
+          doxygen Doxyfile
+          mv build-docs/html site/api
+          cat > site/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en"><head><meta charset="utf-8"><title>process-watchdog</title>
+          <meta http-equiv="refresh" content="0; url=api/index.html"></head>
+          <body><a href="api/index.html">API documentation</a> &middot; <a href="coverage/index.html">Coverage report</a></body></html>
+          HTML
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: coverage
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
