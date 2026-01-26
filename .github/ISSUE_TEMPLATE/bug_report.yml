@@ -1,0 +1,35 @@
+name: Bug report
+description: Report incorrect supervision behaviour, a crash or a build problem
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Describe the problem and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: The relevant part of your INI file (remove secrets).
+      render: ini
+  - type: textarea
+    id: logs
+    attributes:
+      label: pwatchd output
+      description: Run with `--log-level debug` and paste the relevant lines.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `pwatchd --version`
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Distribution, kernel and compiler
+      placeholder: Ubuntu 24.04, 6.8, GCC 13.3
