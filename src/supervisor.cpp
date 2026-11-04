@@ -369,23 +369,23 @@ private:
     {
         service.wake_at.reset();
         service.token = make_token();
-        std::array<int, 2> pipe_fds{};
-        if (::pipe2(pipe_fds.data(), O_CLOEXEC) != 0) {
-            throw os_error("pipe2");
-        }
-        UniqueFd read_end{pipe_fds[0]};
-        const UniqueFd write_end{pipe_fds[1]};
-        static_cast<void>(::fcntl(read_end.get(), F_SETFL, O_NONBLOCK));
-
-        SpawnSpec spec;
-        spec.argv = service.cfg.argv;
-        spec.env = child_environment(service);
-        spec.working_dir = service.cfg.working_dir;
-        spec.limits = service.cfg.limits;
-        spec.output_fd = write_end.get();
-
         service.started_at = now;
+        UniqueFd read_end;
         try {
+            std::array<int, 2> pipe_fds{};
+            if (::pipe2(pipe_fds.data(), O_CLOEXEC) != 0) {
+                throw SpawnError(std::string("pipe2: ") + std::strerror(errno));
+            }
+            read_end.reset(pipe_fds[0]);
+            const UniqueFd write_end{pipe_fds[1]};
+            static_cast<void>(::fcntl(read_end.get(), F_SETFL, O_NONBLOCK));
+
+            SpawnSpec spec;
+            spec.argv = service.cfg.argv;
+            spec.env = child_environment(service);
+            spec.working_dir = service.cfg.working_dir;
+            spec.limits = service.cfg.limits;
+            spec.output_fd = write_end.get();
             service.pid = spawn_process(spec);
         } catch (const SpawnError& error) {
             service.last_exit = error.what();
