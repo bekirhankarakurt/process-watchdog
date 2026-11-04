@@ -54,3 +54,22 @@ jobs:
           ASAN_OPTIONS: detect_leaks=1:strict_string_checks=1:detect_stack_use_after_return=1
           UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
         run: ctest --test-dir build --output-on-failure -j "$(nproc)"
+
+  static-analysis:
+    name: clang-tidy + cppcheck
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck clang-tidy
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      - name: clang-tidy
+        run: run-clang-tidy -p build -quiet 'src/|apps/'
+      - name: cppcheck
+        run: >
+          cppcheck --enable=warning,style,performance,portability --std=c++17 --language=c++
+          --inline-suppr --error-exitcode=1 --suppress=missingIncludeSystem --suppress=useStlAlgorithm
+          -I include -I tests -I build/generated --quiet src apps tests
