@@ -6,8 +6,8 @@ namespace pw {
 
 Millis backoff_delay(const BackoffSpec& spec, unsigned attempt) noexcept
 {
-    const double initial = static_cast<double>(spec.initial.count());
-    const double maximum = static_cast<double>(spec.max.count());
+    const auto initial = static_cast<double>(spec.initial.count());
+    const auto maximum = static_cast<double>(spec.max.count());
     const double scaled = initial * std::pow(spec.multiplier, static_cast<double>(attempt));
     if (!std::isfinite(scaled) || scaled >= maximum) {
         return spec.max;

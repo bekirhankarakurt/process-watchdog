@@ -199,14 +199,14 @@ public:
         } catch (const std::exception&) {
             static_cast<void>(::kill(pid_, SIGTERM));
         }
-        int status = 0;
-        const bool exited = wait_until([&] { return ::waitpid(pid_, &status, WNOHANG) == pid_; }, 15s);
+        int wait_status = 0;
+        const bool exited = wait_until([&] { return ::waitpid(pid_, &wait_status, WNOHANG) == pid_; }, 15s);
         if (!exited) {
             static_cast<void>(::kill(pid_, SIGKILL));
-            static_cast<void>(::waitpid(pid_, &status, 0));
+            static_cast<void>(::waitpid(pid_, &wait_status, 0));
         }
         pid_ = -1;
-        return pw::ExitStatus::from_wait_status(status);
+        return pw::ExitStatus::from_wait_status(wait_status);
     }
 
     [[nodiscard]] fs::path socket() const { return dir_ / "ctl.sock"; }

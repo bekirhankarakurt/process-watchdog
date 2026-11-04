@@ -128,7 +128,7 @@ void parse_watchdog_section(const IniSection& section, const std::filesystem::pa
         {"limit_nproc", LimitKind::Processes},
         {"limit_fsize", LimitKind::FileSize},
     }};
-    const auto it = std::find_if(limit_keys.begin(), limit_keys.end(),
+    const auto* const it = std::find_if(limit_keys.begin(), limit_keys.end(),
                                  [&](const auto& item) { return item.first == entry.key; });
     if (it == limit_keys.end()) {
         return false;
@@ -371,7 +371,7 @@ std::optional<int> parse_signal(std::string_view text)
     if (name.rfind("SIG", 0) == 0) {
         name.remove_prefix(3);
     }
-    const auto it = std::find_if(signal_table.begin(), signal_table.end(),
+    const auto* const it = std::find_if(signal_table.begin(), signal_table.end(),
                                  [&](const SignalEntry& entry) { return entry.name == name; });
     if (it == signal_table.end()) {
         return std::nullopt;
@@ -381,7 +381,7 @@ std::optional<int> parse_signal(std::string_view text)
 
 std::string signal_name(int signal_number)
 {
-    const auto it = std::find_if(signal_table.begin(), signal_table.end(),
+    const auto* const it = std::find_if(signal_table.begin(), signal_table.end(),
                                  [&](const SignalEntry& entry) { return entry.number == signal_number; });
     if (it == signal_table.end()) {
         return "SIG" + std::to_string(signal_number);

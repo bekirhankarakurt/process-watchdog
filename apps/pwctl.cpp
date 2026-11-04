@@ -51,10 +51,10 @@ struct Options {
     std::vector<std::string> words;
 };
 
-[[nodiscard]] std::string env_or(const char* name, std::string fallback)
+[[nodiscard]] std::string env_or(const char* name, std::string_view fallback)
 {
     const char* const value = std::getenv(name);  // NOLINT(concurrency-mt-unsafe): single-threaded CLI
-    return value != nullptr && *value != '\0' ? std::string(value) : fallback;
+    return value != nullptr && *value != '\0' ? std::string(value) : std::string(fallback);
 }
 
 void print_table(const std::vector<std::string>& body)
@@ -69,11 +69,15 @@ void print_table(const std::vector<std::string>& body)
     for (const std::string& line : body) {
         rows.push_back(pw::parse_fields(line));
     }
+    const auto cell_of = [](const std::map<std::string, std::string>& row, const std::string& key) {
+        const auto it = row.find(key);
+        return it == row.end() ? std::string("-") : it->second;
+    };
     std::vector<std::size_t> widths;
     for (const auto& [key, title] : columns) {
         std::size_t width = title.size();
-        for (auto& row : rows) {
-            width = std::max(width, row[key].size());
+        for (const auto& row : rows) {
+            width = std::max(width, cell_of(row, key).size());
         }
         widths.push_back(width);
     }
@@ -89,8 +93,8 @@ void print_table(const std::vector<std::string>& body)
         std::cout << line << "\n";
     };
     print_row([&](std::size_t i) { return columns[i].second; });
-    for (auto& row : rows) {
-        print_row([&](std::size_t i) { return row[columns[i].first]; });
+    for (const auto& row : rows) {
+        print_row([&](std::size_t i) { return cell_of(row, columns[i].first); });
     }
 }
 
