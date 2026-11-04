@@ -91,7 +91,7 @@ struct Service {
     UniqueFd output;
     std::uint64_t token{0};
     unsigned restarts{0};
-    TimePoint started_at{};
+    TimePoint started_at;
     std::optional<TimePoint> wake_at;
     AfterExit after_exit{AfterExit::Evaluate};
     bool heartbeat_kill{false};
@@ -254,7 +254,7 @@ private:
             break;
         case Source::Output:
             if (index < services_.size()) {
-                drain_output(*services_[index]);
+                drain_output(*services_.at(index));
             }
             break;
         }
@@ -324,7 +324,7 @@ private:
         }
     }
 
-    void apply_policy(Service& service, bool failed, Millis uptime, TimePoint now)
+    static void apply_policy(Service& service, bool failed, Millis uptime, TimePoint now)
     {
         const RestartDecision decision = service.tracker.on_exit(failed, uptime);
         switch (decision.verdict) {
@@ -407,7 +407,7 @@ private:
         spawn(service, now);
     }
 
-    void begin_stop(Service& service, AfterExit after, TimePoint now)
+    static void begin_stop(Service& service, AfterExit after, TimePoint now)
     {
         service.after_exit = after;
         if (service.state == ServiceState::Stopping) {
