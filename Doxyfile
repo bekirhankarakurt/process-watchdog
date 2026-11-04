@@ -1,0 +1,26 @@
+# Doxygen configuration for the process-watchdog API reference.
+PROJECT_NAME           = "process-watchdog"
+PROJECT_BRIEF          = "Linux process supervisor with restart policies, heartbeats and resource limits"
+PROJECT_NUMBER         = 1.0.0
+OUTPUT_DIRECTORY       = build-docs
+INPUT                  = include/pw README.md
+USE_MDFILE_AS_MAINPAGE = README.md
+FILE_PATTERNS          = *.hpp *.md
+RECURSIVE              = YES
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+HIDE_UNDOC_RELATIONS   = YES
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+HTML_OUTPUT            = html
+HTML_COLORSTYLE        = AUTO_LIGHT
+GENERATE_TREEVIEW      = YES
+QUIET                  = YES
+WARN_IF_UNDOCUMENTED   = NO
+WARN_AS_ERROR          = NO
+SOURCE_BROWSER         = YES
+STRIP_FROM_PATH        = .
+STRIP_FROM_INC_PATH    = include
+IMAGE_PATH             = docs
+HAVE_DOT               = NO
