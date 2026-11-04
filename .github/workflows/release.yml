@@ -3,6 +3,14 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Tag to create and release, e.g. v1.0.0"
+        required: true
+
+env:
+  TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
 
 permissions:
   contents: write
@@ -29,7 +37,7 @@ jobs:
         run: ctest --test-dir build --output-on-failure -j "$(nproc)"
       - name: Package
         run: |
-          name="process-watchdog-${GITHUB_REF_NAME}-linux-${{ matrix.arch }}"
+          name="process-watchdog-${TAG}-linux-${{ matrix.arch }}"
           mkdir -p "dist/${name}/bin" "dist/${name}/examples"
           cp build/pwatchd build/pwctl "dist/${name}/bin/"
           strip "dist/${name}/bin/"*
@@ -56,7 +64,7 @@ jobs:
         run: cd dist && sha256sum *.tar.gz > SHA256SUMS && cat SHA256SUMS
       - name: Release notes from CHANGELOG
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="${TAG#v}"
           awk -v v="$version" '
             $0 ~ "^## \\[" v "\\]" {found=1; next}
             found && /^## \[/ {exit}
@@ -67,5 +75,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: >
-          gh release create "$GITHUB_REF_NAME" dist/*.tar.gz dist/SHA256SUMS
-          --title "process-watchdog $GITHUB_REF_NAME" --notes-file notes.md --verify-tag
+          gh release create "$TAG" dist/*.tar.gz dist/SHA256SUMS
+          --target "$GITHUB_SHA" --title "process-watchdog $TAG" --notes-file notes.md
