@@ -54,7 +54,7 @@ jobs:
           <meta http-equiv="refresh" content="0; url=api/index.html"></head>
           <body><a href="api/index.html">API documentation</a> &middot; <a href="coverage/index.html">Coverage report</a></body></html>
           HTML
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
